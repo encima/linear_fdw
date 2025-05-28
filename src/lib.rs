@@ -73,6 +73,12 @@ impl Guest for LinearFdw {
             nodes {{
               id
               title
+              description
+              state {{
+                id
+                name
+                color
+              }}
             }}
           }}
         }}"#, object);
@@ -160,64 +166,77 @@ impl Guest for LinearFdw {
         stmt: ImportForeignSchemaStmt,
     ) -> Result<Vec<String>, FdwError> {
         let ret = vec![
+            // Projects table
             format!(
-                r#"create foreign table if not exists my_profile (
-                    id bigint,
-                    username text,
-                    email text,
-                    attrs jsonb
-                )
-                server {} options (
-                    object 'my_profile'
-                )"#,
-                stmt.server_name,
-            ),
-            format!(
-                r#"create foreign table if not exists event_types (
-                    attrs jsonb
-                )
-                server {} options (
-                    object 'event-types'
-                )"#,
-                stmt.server_name,
-            ),
-            format!(
-                r#"create foreign table if not exists bookings (
-                    attrs jsonb
-                )
-                server {} options (
-                    object 'bookings',
-                    rowid_column 'attrs'
-                )"#,
-                stmt.server_name,
-            ),
-            format!(
-                r#"create foreign table if not exists calendars (
-                    attrs jsonb
-                )
-                server {} options (
-                    object 'calendars'
-                )"#,
-                stmt.server_name,
-            ),
-            format!(
-                r#"create foreign table if not exists schedules (
-                    id bigint,
+                r#"create foreign table if not exists projects (
+                    id text,
                     name text,
-                    attrs jsonb
+                    description text,
+                    state text
                 )
                 server {} options (
-                    object 'schedules'
+                    object 'projects',
+                    rowid_column 'id'
                 )"#,
                 stmt.server_name,
             ),
+            // Issues table
             format!(
-                r#"create foreign table if not exists conferencing (
-                    id bigint,
+                r#"create foreign table if not exists issues (
+                    id text,
+                    title text,
+                    description text,
+                    state text
+                )
+                server {} options (
+                    object 'issues',
+                    rowid_column 'id'
+                )"#,
+                stmt.server_name,
+            ),
+            // Teams table
+            format!(
+                r#"create foreign table if not exists teams (
+                    id text,
+                    name text,
+                    key text,
+                    description text,
+                    color text,
+                    timezone text,
+                    created_at timestamptz,
+                    updated_at timestamptz,
+                    archived_at timestamptz,
+                    default_issue_state_id text,
+                    default_issue_priority float8,
+                    auto_archive_period float8,
+                    auto_close_period float8,
+                    auto_close_state_id text,
+                    organization_id text,
                     attrs jsonb
                 )
                 server {} options (
-                    object 'conferencing'
+                    object 'teams',
+                    rowid_column 'id'
+                )"#,
+                stmt.server_name,
+            ),
+            // Customers table
+            format!(
+                r#"create foreign table if not exists customers (
+                    id text,
+                    name text,
+                    description text,
+                    created_at timestamptz,
+                    updated_at timestamptz,
+                    archived_at timestamptz,
+                    url text,
+                    organization_id text,
+                    creator_id text,
+                    attrs jsonb
+                )
+                server {} options (
+                    object 'customers',
+                    rowid_column 'id'
                 )"#,
                 stmt.server_name,
             ),
